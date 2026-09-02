@@ -1,0 +1,215 @@
+name: Publish the Website
+
+# Published with "Deploy using GitHub Actions", so a deployment replaces the
+# site wholesale rather than adding to it: every run has to assemble everything
+# that is served. Two of the three pieces are in this repository — the static
+# pages, and the documentation of each released version — and the third, the
+# documentation of Kind 2's main branch, is rebuilt from its sources on every
+# run. Serving from kind2-mc.github.io rather than from a project site is what
+# keeps the documentation at /docs/... instead of /kind2/docs/...
+on:
+  push:
+    branches:
+      - main
+  # kind2-mc/kind2 fires this on every push to its main branch and on every
+  # release tag, naming the release in client_payload.version if there is one.
+  repository_dispatch:
+    types: [kind2-docs]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'A release to build and archive alongside main, e.g. v3.1.0'
+        required: false
+
+# Deployments are serialized, and a run in flight is never cancelled: the site
+# is only coherent once a run has uploaded its complete artifact, so a
+# half-finished one must not become the live site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # main's documentation is rebuilt on every run. A release's is built once, by
+  # the run its tag triggers, and then kept in this repository: since the site
+  # is reassembled from scratch each time, anything that has to outlive the run
+  # that produced it needs somewhere to live, and a released version's
+  # documentation should stay what its own sources generated rather than being
+  # re-derived years later by a toolchain that has moved on.
+  select-versions:
+    runs-on: ubuntu-latest
+
+    outputs:
+      versions: ${{ steps.select.outputs.versions }}
+      release: ${{ steps.select.outputs.release }}
+
+    steps:
+    # The version arrives from outside this workflow, so it is read from the
+    # environment rather than interpolated into the script, and it has to look
+    # like a release tag before anything uses it as a git ref or a path.
+    - name: Decide which versions to build
+      id: select
+      env:
+        VERSION: ${{ github.event.client_payload.version || inputs.version }}
+      run: |
+        if [[ -z "$VERSION" || "$VERSION" == main ]]; then
+          echo 'versions=["main"]' >> "$GITHUB_OUTPUT"
+          echo 'release=' >> "$GITHUB_OUTPUT"
+        elif [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "versions=[\"main\", \"$VERSION\"]" >> "$GITHUB_OUTPUT"
+          echo "release=$VERSION" >> "$GITHUB_OUTPUT"
+        else
+          echo "Not a release tag: $VERSION" >&2
+          exit 1
+        fi
+
+  build-docs:
+    needs: select-versions
+
+    strategy:
+      matrix:
+        version: ${{ fromJSON(needs.select-versions.outputs.versions) }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    # At the root of the workspace, which is where Kind 2's Makefiles and its
+    # own build-kind2 action expect to be. Nothing from this repository is
+    # needed to build the documentation, so nothing else is checked out.
+    - name: Check out the sources to document
+      uses: actions/checkout@v6
+      with:
+        repository: kind2-mc/kind2
+        ref: ${{ matrix.version }}
+        # doc/themes/hextra, the Hugo theme
+        submodules: recursive
+
+    - name: Configure GitHub Pages
+      id: pages
+      uses: actions/configure-pages@v6
+
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v3
+      with:
+        hugo-version: '0.146.0'
+        extended: true
+
+    # Hugo bakes the baseURL into every asset and cross-page link, and kind2's
+    # doc/ deliberately carries none: each copy of the documentation is served
+    # from its own subdirectory, so the URL it is built for is settled here.
+    # Only the HTML is built. The PDF is a separate target with its own Python
+    # and Cairo dependencies, and it is not part of the site.
+    - name: Build the user documentation
+      env:
+        HUGO_BASEURL: ${{ steps.pages.outputs.base_url }}/docs/${{ matrix.version }}/user/
+      run: make -C doc html
+
+    - name: Build Kind 2
+      uses: ./.github/actions/build-kind2
+      with:
+        ocaml-version: 5.5.0
+
+    - name: Build the developer documentation
+      run: |
+        opam install -y odoc
+        opam exec make kind2-doc
+
+    # Laid out as it is served, so that both the copy kept in this repository
+    # and the deployment can unpack it where it stands.
+    - name: Collect the documentation
+      run: |
+        mkdir -p docs/${{ matrix.version }}
+        mv doc/public docs/${{ matrix.version }}/user
+        mv ocamldoc docs/${{ matrix.version }}/developer
+
+    - name: Upload the documentation
+      uses: actions/upload-artifact@v7
+      with:
+        name: docs-${{ matrix.version }}
+        path: docs
+        retention-days: 1
+
+  archive-release-docs:
+    if: needs.select-versions.outputs.release != ''
+    needs: [select-versions, build-docs]
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    env:
+      RELEASE: ${{ needs.select-versions.outputs.release }}
+
+    steps:
+    - name: Check out the website
+      uses: actions/checkout@v6
+
+    - name: Download the documentation of ${{ needs.select-versions.outputs.release }}
+      uses: actions/download-artifact@v8
+      with:
+        name: docs-${{ needs.select-versions.outputs.release }}
+        path: docs
+
+    # Rebuilding this is what we are avoiding, so it is committed rather than
+    # left to the deployment. A push made with GITHUB_TOKEN does not start
+    # another workflow run, so this does not re-enter the workflow: the
+    # deployment below picks the commit up from the checkout it does itself.
+    - name: Commit the documentation of ${{ needs.select-versions.outputs.release }}
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add "docs/$RELEASE"
+        git diff --cached --quiet \
+          || git commit -m "Add the documentation of $RELEASE"
+        git push origin HEAD:main
+
+  assemble:
+    # archive-release-docs is skipped on everything but a release, and a skipped
+    # dependency would take this job with it without the explicit condition.
+    if: ${{ !cancelled()
+            && needs.build-docs.result == 'success'
+            && needs.archive-release-docs.result != 'failure' }}
+    needs: [build-docs, archive-release-docs]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the static pages and the archived documentation
+      uses: actions/checkout@v6
+      with:
+        path: _site
+
+    # Overwrites the copy just committed on a release run with the identical one
+    # this run built, and adds main's, which is never committed. The .git and
+    # .github directories the checkout leaves behind are dropped by
+    # upload-pages-artifact, which excludes them along with every other dotfile.
+    - name: Add the documentation built by this run
+      uses: actions/download-artifact@v8
+      with:
+        pattern: docs-*
+        merge-multiple: true
+        path: _site/docs
+
+    - name: Upload the site
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: _site
+
+  deploy:
+    needs: assemble
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v5
