@@ -201,6 +201,11 @@ jobs:
         path: _site
 
   deploy:
+    # Skipping propagates down the whole chain, not just to a job's direct
+    # dependents: without this, archive-release-docs being skipped on anything
+    # but a release takes this job with it, through an assemble that ran and
+    # succeeded, and the run reports success having deployed nothing.
+    if: ${{ !cancelled() && needs.assemble.result == 'success' }}
     needs: assemble
 
     runs-on: ubuntu-latest
