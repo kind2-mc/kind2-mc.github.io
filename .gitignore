@@ -1,0 +1,8 @@
+# Editor config files
+.vscode/
+
+# macOS folder metadata
+.DS_Store
+
+# Log files
+*.log

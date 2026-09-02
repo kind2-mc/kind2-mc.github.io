@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Kind 2 : Multi-engine SMT-based automatic model checker for safety properties of Lustre programs" />
+
+    <!-- Favicons generated with RealFaviconGenerator.net -->
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="manifest" href="icons/site.webmanifest">
+    <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="icons/favicon.ico">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="msapplication-config" content="icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Kind 2</title>
+  </head>
+
+<body>
+
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+  <header class="inner">
+  <a id="forkme_banner" href="https://github.com/kind2-mc/kind2">View on GitHub</a>
+  
+  <h1 id="project_title">Kind 2</h1>
+  <p id="project_tagline">Multi-engine SMT-based automatic model checker for synchronous reactive systems</p>
+  
+  <section id="download_buttons">
+  <ul>
+    <li><a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-linux-x86_64.tar.gz"><strong>Linux</strong>
+    <br />x86_64</a></li>
+    <li><a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-linux-arm64.tar.gz"><strong>Linux</strong>
+    <br />arm64</a></li>
+    <li><a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-macos-12-x86_64.tar.gz"><strong>macOS</strong>
+    <br />x86_64</a></li>
+    <li><a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-macos-12-arm64.tar.gz"><strong>macOS</strong>
+    <br />arm64</a></li>
+  </ul>
+  </section>
+  
+  </header>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+      <main id="main_content" class="inner">
+
+  <h2 id="about">About</h2>
+
+  <p>Kind 2 is an open-source, multi-engine, SMT-based automatic model checker 
+        for safety properties of finite-state or infinite-state synchronous reactive systems 
+        expressed as in an extension of the 
+        <a href="http://www-verimag.imag.fr/The-Lustre-Programming-Language.html?lang=en">Lustre</a> language. 
+        In its basic configuration it takes as input one or more Lustre files annotated with properties 
+        to be proven invariant, and outputs for each property either a confirmation or a counterexample, 
+        i.e., a sequence inputs that falsifies the property.
+        More advanced features include contract-based compositional verification, proof generation
+        for proven properties, and contract-based test generation.
+  </p>
+
+  <p>Kind 2 is a from-scratch reimplementation of the <a href="http://clc.cs.uiowa.edu/Kind">Kind</a> model checker.</p>
+
+  <h3>Main features</h3>
+  <ul>
+    <li>Input in Lustre V4 and parts of V6 with support for:
+      <ul>
+        <li>Signed and unsigned versions of C-style machine integers</li>
+        <li>If-Then-Else and Frame Condition blocks</li>
+        <li>Refinement types</li>
+      </ul>
+    </li>
+    <li>Assume/guarantee-based contract language</li>
+    <li>Modular and compositional verification</li>
+    <li>Counterexample and witness generation</li>
+    <li>Proof certificate generation</li>
+    <li>Merit and blame assignment analysis through the computation of:
+      <ul>
+        <li>Inductive Validity Cores</li>
+        <li>Minimal Cut Sets</li>
+      </ul>
+    </li>
+    <li>Realizability and satisfiability checking of contracts
+      <ul>
+        <li>Deadlocking trace generation for unrealizable contracts</li>
+      </ul>
+    </li>
+    <li>Non-vacuity checks for:
+      <ul>
+        <li>Conditional properties</li>
+        <li>Contract mode implications</li>
+      </ul>
+    </li>
+    <li>Assumption generation for contracts</li>
+    <li>Multiple model checking engines:
+       <ul>
+        <li>Bounded Model Checking (BMC)</li>
+        <li><em>k</em>-induction with lazy path compression</li>
+        <li>IC3 aka PDR</li>
+        <li>Invariant discovery from templates for a syntactic analysis of the system</li>
+      </ul>
+    </li>
+    <li>Message-passing-based parallel composition of model checking engines</li>
+    <li>Graph-based invariant generation</li>
+    <li>Sharing of discovered invariants between all engines</li>
+    <li>Support for multiple SMT solvers as backend reasoning engines
+      <ul><li>Bitwuzla, cvc5, MathSAT5, SMTInterpol, Yices 2, Yices 1, and Z3</li></ul>
+    </li>
+    <li>Test-case generation</li>
+  </ul>
+
+      <h2 id="groups">Mailing Lists</h2>
+
+      <dl class="bare-links">
+        <dt><a href="https://groups.google.com/d/forum/kind2-announce">kind2-announce@googlegroups.com</a></dt>
+        <dd>Release announcements</dd>
+        <dt><a href="https://groups.google.com/d/forum/kind2-users">kind2-users@googlegroups.com</a></dt>
+        <dd>Discussions between users and developers</dd>
+      </dl>
+
+      <h2 id="doc">Documentation</h2>
+
+      <ul>
+	<li>
+	<a href="https://kind.cs.uiowa.edu/kind2_user_docs/lustre_primer.pdf">A Lustre Primer for Kind 2 Users</a> (PDF)
+	</li>
+	<li>
+	User documentation in HTML format:
+	<a href="https://kind.cs.uiowa.edu/kind2_user_docs/v3.0.0/"
+	   aria-label="User documentation for v3.0.0, HTML">v3.0.0</a>
+        (<a href="https://kind.cs.uiowa.edu/kind2_user_doc/"
+            aria-label="User documentation for the main branch, HTML">main</a>)
+	</li>
+        <li>
+        User documentation in PDF format:
+        <a href="https://kind.cs.uiowa.edu/kind2_user_docs/v3.0.0/kind2_v3.0.0.pdf"
+           aria-label="User documentation for v3.0.0, PDF">v3.0.0</a>
+        (<a href="https://kind.cs.uiowa.edu/kind2_user_doc/doc.pdf"
+            aria-label="User documentation for the main branch, PDF">main</a>)
+        </li>
+	<li>
+	<a href="https://kind.cs.uiowa.edu/kind2_dev_doc/">Developer's documentation (main branch)</a>
+	</li>
+      </ul>
+      
+      <h2 id="kind2-web">Try Kind 2 Online</h2>
+
+      <p>Visit our <a href="https://kind.cs.uiowa.edu/app" rel="nofollow">Kind 2 web interface</a> to try Kind 2 from your browser</p>
+
+<h2 id="download">Download</h2>
+<h3>Executables</h3>
+  <ul class="bare-links">
+	<li>
+	<a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-linux-x86_64.tar.gz">Download
+	Kind 2 v3.0.0 for Linux (x86_64)</a>
+	</li>
+	<li>
+	<a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-linux-arm64.tar.gz">Download
+	Kind 2 v3.0.0 for Linux (arm64)</a>
+	</li>
+	<li>
+	<a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-macos-12-x86_64.tar.gz">Download
+	Kind 2 v3.0.0 for macOS 12 (x86_64)</a>
+	</li>
+	<li>
+	<a href="https://github.com/kind2-mc/kind2/releases/download/v3.0.0/kind2-v3.0.0-macos-12-arm64.tar.gz">Download
+	Kind 2 v3.0.0 for macOS 12 (arm64)</a>
+	</li>
+	<li>
+	<a href="https://github.com/kind2-mc/kind2/archive/v3.0.0.tar.gz">Download Kind 2 v3.0.0 sources</a>
+	</li>
+      </ul>
+
+<h3>VS Code Extension</h3>
+
+<p>You can also install our
+<a href="https://marketplace.visualstudio.com/items?itemName=kind2-mc.vscode-kind2">Kind 2 extension for VS Code</a>,
+which provides support for Kind 2. The extension contains
+Linux and macOS binaries for Kind 2 and Z3 ready to use. Windows is also supported
+through WSL2 (see the <a href="https://github.com/kind2-mc/vscode-kind2#windows-advanced">Windows setup instructions</a>
+for details).</p>
+
+<h3>Docker</h3>
+
+<p>Kind 2 is also available on <a href="https://hub.docker.com/r/kind2/kind2/">Docker Hub</a>.
+Follow the <a href="https://github.com/kind2-mc/kind2#docker">Docker installation steps</a> to install one of the images.</p>
+
+<h2 id="people">People</h2>
+<h3>Current</h3>
+  <ul class="bare-links">
+	<li><a href="http://homepage.divms.uiowa.edu/~tinelli">Cesare Tinelli</a></li>
+	<li><a href="https://daniel-larraz.github.io/">Daniel Larraz</a></li>
+	<li><a href="https://lorchrob.github.io/">Robert Lorch</a></li>
+	<li>Joshua Bergthold</li>
+  </ul>
+
+<h3>Alumni</h3>
+  <ul class="bare-links">
+	<li>Ethan Rooke</li>
+	<li>Kian Weimer</li>
+	<li>Abdal Mohamed</li>
+	<li><a href="https://uiowa.marmamorphism.com/">Andrew Marmaduke</a></li>
+	<li><a href="https://homepage.cs.uiowa.edu/~aningle/">Apoorv Ingle</a></li>
+	<li><a href="http://homepage.divms.uiowa.edu/~mahgoubyahia/">Mudathir Mohamed</a></li>
+	<li><a href="http://homepage.divms.uiowa.edu/~viswanathn/">Arjun Viswanathan</a></li>
+	<li>Mickaël Laurent</li>
+	<li><a href="https://www.researchgate.net/profile/Adrien_Champion">Adrien Champion</a></li>
+	<li><a href="https://mebsout.github.io">Alain Mebsout</a></li>
+	<li><a href="http://www.sticksel.info/christoph/">Christoph Sticksel</a></li>
+	<li>John Bodeen</li>
+	<li>Kevin Clancy</li>
+	<li>Mingyu Ma</li>
+	<li>Baoluo Meng</li>
+	<li>Eric Burns</li>
+	<li>Jason Oxley</li>
+	<li>Ruoyu Zhang</li>
+</ul>
+
+<p>Other contributors to the Kind 2 codebase are listed in
+<a href="https://github.com/kind2-mc/kind2/blob/main/THANKS.md">THANKS.md</a>.</p>
+
+<h2 id="publications">Publications</h2>
+
+<p>Daniel Larraz, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/LT+22-ada.pdf">Finding Locally Smallest Cut Sets using Max-SMT</a>.
+In <span class="pub">ACM SIGAda Ada Letters</span>, 2022.</p>
+
+<p>Daniel Larraz, Arjun Viswanathan, Mickaël Laurent, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/LVTL+22-ada.pdf">Beyond model checking of idealized Lustre in Kind 2</a>.
+In <span class="pub">ACM SIGAda Ada Letters</span>, 2022.</p>
+
+<p>Daniel Larraz, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/LT+22.pdf">Realizability Checking of Contracts with Kind 2</a>. <span class="pub">CoRR abs/2205.09082</span>, 2022.</p>
+
+<p>Daniel Larraz, Mickaël Laurent, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/LLT+21.pdf">Merit and Blame Assignment with Kind 2</a>. In <span class="pub">Proceedings of the 26th International Conference on Formal Methods for Industrial Critical Systems (FMICS)</span>, 2021.</p>
+
+<p>Lucas Wagner, Alain Mebsout, Cesare Tinelli, Darren Cofer, Konrad Slind. <a href="https://kind.cs.uiowa.edu/papers/WMTCS+17.pdf">Qualification of a Model Checker for Avionics Software Verification</a>. In <span class="pub">Proceedings of the 9th NASA Formal Methods Symposium (NFM)</span>, 2017.</p>
+
+<p>Alain Mebsout, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/MT+16.pdf">Proof Certificates for SMT-based Model Checkers for Infinite-state Systems</a>. In <span class="pub">Proceedings of 16th Conference on Formal Methods in Computer-Aided Design (FMCAD)</span>, 2016.</p>
+
+<p>Adrien Champion, Alain Mebsout, Christoph Sticksel, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/CMST+16.pdf">The Kind 2 Model-Checker</a>. In <span class="pub">Proceedings of 28th International Conference on Computer Aided Verification (CAV)</span>, 2016.</p>
+
+<p>Adrien Champion, Arie Gurfinkel, Temesghen Kahsai, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/CGKT+16.pdf">CoCoSpec: A Mode-Aware Contract Language for Reactive Systems</a>. In <span class="pub">Proceedings of the 14th International Conference on Software Engineering and Formal Methods (SEFM)</span>, 2016.</p>
+
+<p>Pierre-Loïc Garoche, Temesghen Kahsai, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/GKT+13.pdf">Incremental Invariant Generation using Logic-based Automatic Abstract Transformers</a>. In <span class="pub">Proceedings of the 5th NASA Formal Methods Symposium (NFM)</span>, 2013.</p>
+
+<p>Temesghen Kahsai, Pierre-Loïc Garoche, Cesare Tinelli, Mike Whalen. <a href="https://kind.cs.uiowa.edu/papers/KGTW+12.pdf">Incremental verification with mode variable invariants in state machines</a>. In <span class="pub">Proceedings of the 4th NASA Formal Methods Symposium (NFM)</span>, 2012.</p>
+
+<p>Temesghen Kahsai, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/KT+11.pdf">PKind: A parallel k-induction based model checker</a>. In <span class="pub">Proceedings of 10th International Workshop on Parallel and Distributed Methods in verifiCation (PDMC)</span>, 2011.</p>
+
+<p>Temesghen Kahsai, Yeting Ge, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/KGT+11.pdf">Instantiation-Based Invariant Discovery</a>. In <span class="pub">Proceedings of the 3rd NASA Formal Methods Symposium (NFM)</span>, 2011.</p>
+
+<p>George Hagen, Cesare Tinelli. <a href="https://kind.cs.uiowa.edu/papers/HT+08.pdf">Scaling up the formal verification of Lustre programs with SMT-based techniques</a>. In <span class="pub">Proceedings of the 8th International Conference on Formal Methods in Computer-Aided Design (FMCAD)</span>, 2008.</p>
+
+<p>George Hagen. <a href="https://kind.cs.uiowa.edu/papers/H+08-PHD.pdf">Verifying safety properties of Lustre programs: an SMT-based approach</a>. <span class="pub">PhD dissertation. Department of Computer Science. The University of Iowa.</span> December 2008.</p>
+
+<h2 id="acknowledgments">Acknowledgments</h2>
+     
+<p>
+The Kind logo was designed by Daniel Yahyazadeh.
+</p>
+<p>
+The development of Kind 2 has been partially supported with funding from the following organizations.
+</p>
+<ul>
+  <li><a href="https://www.afrl.af.mil/">AFRL</a> (awards #FA865021D2602, #FA8750-13-C-0051)</li>
+  <li><a href="http://www.darpa.mil/">DARPA</a> (awards #N66001-18-C-4006, N66001-18-C-4012)</li>
+  <li><a href="http://www.geglobalresearch.com/">GE Global Research</a></li>
+  <li><a href="https://www.nasa.gov">NASA</a> (awards #NNA13AA21C, #NNL14AA06C, #NNX14AI09G)</li>
+  <li><a href="https://www.rockwellcollins.com">Collins Aerospace</a></li>
+</ul>
+
+    </main>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
