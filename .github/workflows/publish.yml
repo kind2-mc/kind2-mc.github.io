@@ -111,7 +111,7 @@ jobs:
     - name: Build Kind 2
       uses: ./.github/actions/build-kind2
       with:
-        ocaml-version: 5.5.0
+        ocaml-version: 5.5.1
 
     - name: Build the developer documentation
       run: |
