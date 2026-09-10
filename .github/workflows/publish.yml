@@ -98,15 +98,27 @@ jobs:
         hugo-version: '0.146.0'
         extended: true
 
+    # WeasyPrint renders the PDF through Pango, and doc/pdf-tools/build_pdf.sh
+    # checks the result with poppler's pdfinfo and pdfimages. The runner image
+    # carries no version guarantee for any of them, so they are installed here
+    # rather than assumed; the Python packages themselves come from the venv
+    # that `make pdf` builds.
+    - name: Install the PDF toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          libpango-1.0-0 libpangoft2-1.0-0 poppler-utils python3-venv
+
     # Hugo bakes the baseURL into every asset and cross-page link, and kind2's
     # doc/ deliberately carries none: each copy of the documentation is served
     # from its own subdirectory, so the URL it is built for is settled here.
-    # Only the HTML is built. The PDF is a separate target with its own Python
-    # and Cairo dependencies, and it is not part of the site.
+    # The PDF is built from public/, so it needs the same baseURL to map the
+    # URLs Hugo wrote back onto the files they came from. `make pdf` depends on
+    # html and then skips the rebuild, so Hugo still runs exactly once.
     - name: Build the user documentation
       env:
         HUGO_BASEURL: ${{ steps.pages.outputs.base_url }}/docs/${{ matrix.version }}/user/
-      run: make -C doc html
+      run: make -C doc pdf
 
     - name: Build Kind 2
       uses: ./.github/actions/build-kind2
@@ -119,12 +131,17 @@ jobs:
         opam exec make kind2-doc
 
     # Laid out as it is served, so that both the copy kept in this repository
-    # and the deployment can unpack it where it stands.
+    # and the deployment can unpack it where it stands. The PDF sits beside the
+    # two HTML trees rather than inside the user one, under the name Kind 2's
+    # releases have always attached it as, so that it is served from
+    # /docs/<version>/user_documentation.pdf.
     - name: Collect the documentation
       run: |
         mkdir -p docs/${{ matrix.version }}
         mv doc/public docs/${{ matrix.version }}/user
         mv ocamldoc docs/${{ matrix.version }}/developer
+        mv doc/print/kind2-user-documentation.pdf \
+           docs/${{ matrix.version }}/user_documentation.pdf
 
     - name: Upload the documentation
       uses: actions/upload-artifact@v7
