@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="kMoXI : SMT-based model checker for MoXI, the Model eXchange Interlingua, built from the Kind 2 sources" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16x16.png">
+    <link rel="manifest" href="../icons/site.webmanifest">
+    <link rel="mask-icon" href="../icons/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="../icons/favicon.ico">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="msapplication-config" content="../icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" type="text/css" media="screen" href="../stylesheets/stylesheet.css">
+    <title>kMoXI</title>
+  </head>
+<body>
+<!-- HEADER -->
+<div id="header_wrap" class="outer">
+  <header class="inner">
+  <a id="forkme_banner" href="https://github.com/kind2-mc/kind2#kmoxi">View on GitHub</a>
+  <h1 id="project_title">kMoXI</h1>
+  <p id="project_tagline">SMT-based model checker for MoXI, the Model eXchange Interlingua, built on the engines of Kind 2</p>
+  </header>
+</div>
+<!-- MAIN CONTENT -->
+<div id="main_content_wrap" class="outer">
+      <main id="main_content" class="inner">
+  <h2 id="about">About</h2>
+  <p>kMoXI (<code>kmoxi</code>) is a model checker for
+     <a href="https://doi.org/10.1007/978-3-031-66149-5_2">MoXI</a>, the Model eXchange Interlingua,
+     a language for symbolic model checking of transition systems built on SMT-LIB.
+     It is a second executable built from the sources of
+     <a href="../">Kind 2</a>: a MoXI front end on top of the engines of Kind 2,
+     which run in parallel on the transition system of the model.
+     A model declares its logic, defines one or more systems and checks one of them
+     with a <code>check-system</code> command; kMoXI answers each query with a MoXI
+     <code>check-system-response</code>: <code>unsat</code> when no execution satisfies
+     the query, with the inductive invariant that proves it as a certificate, or
+     <code>sat</code>, with a witnessing trace.
+  </p>
+
+  <h3>Main features</h3>
+  <ul>
+    <li>Native MoXI input (the S-expression syntax), checked against the MoXI language
+        definition before the analysis</li>
+    <li>Logics <code>QF_BV</code>, <code>QF_ABV</code>, <code>QF_LIA</code>,
+        <code>QF_ALIA</code>, <code>QF_LRA</code> and <code>QF_NIA</code></li>
+    <li>Multiple model checking engines, run in parallel and sharing their invariants:
+      <ul>
+        <li>Bounded Model Checking (BMC)</li>
+        <li><em>k</em>-induction</li>
+        <li>IC3 with quantifier elimination or with implicit abstraction</li>
+        <li>Invariant generation</li>
+      </ul>
+    </li>
+    <li>Certificates (inductive invariants) for <code>unsat</code> answers and traces
+        for <code>sat</code> answers, in the MoXI response format</li>
+    <li>Several queries per <code>check-system</code> command, answered in order</li>
+    <li>Support for multiple SMT solvers as backend reasoning engines
+      <ul><li>Bitwuzla, cvc5, MathSAT5, SMTInterpol, Yices 2, and Z3</li></ul>
+    </li>
+  </ul>
+
+  <h2 id="build">Building</h2>
+  <p>kMoXI is not distributed with the Kind 2 releases or through OPAM. It is built from
+     a clone of the <a href="https://github.com/kind2-mc/kind2">Kind 2 repository</a>, with
+     the same dependencies as Kind 2:</p>
+<pre><code>git clone https://github.com/kind2-mc/kind2.git
+cd kind2
+make kmoxi</code></pre>
+  <p>This builds and installs <code>bin/kmoxi</code>. kMoXI has a version of its own,
+     independent of that of Kind 2; <code>kmoxi --version</code> prints it with the Kind 2
+     build it comes from. See the
+     <a href="https://github.com/kind2-mc/kind2#building">building instructions</a>
+     in the README for the dependencies and the supported solvers.</p>
+
+  <h2 id="usage">Usage</h2>
+<pre><code>kmoxi [options] model.moxi</code></pre>
+  <p>For example, the following model checks whether the counter of system
+     <code>counter</code> can reach the value 10:</p>
+<pre><code>(set-logic QF_LIA)
+(define-system counter
+  :input ((reset Bool))
+  :output ((c Int))
+  :init (= c 0)
+  :trans (= c' (ite reset 0 (+ c 1))))
+(check-system counter
+  :input ((reset Bool))
+  :output ((c Int))
+  :reachable (ten (= c 10))
+  :query (reach_ten (ten)))</code></pre>
+  <p>kMoXI answers <code>sat</code> for the query <code>reach_ten</code>, with a trace of
+     eleven states in which <code>reset</code> stays false. Useful options, all shared with
+     Kind 2, include <code>--timeout</code>, <code>--enable</code> to run selected engines
+     only, and <code>--smt_solver</code> and its companions to choose the solvers;
+     <code>kmoxi --help</code> lists them. The
+     <a href="https://github.com/kind2-mc/kind2#usage">usage section</a> of the README
+     describes the response format and the certificates, and the
+     <a href="https://github.com/kind2-mc/kind2#supported-subset-of-moxi">supported
+     subset of MoXI</a>.</p>
+
+  <h2 id="doc">Documentation</h2>
+  <ul>
+    <li><a href="https://github.com/kind2-mc/kind2#kmoxi">kMoXI in the Kind 2 README</a>:
+        building, usage, and the supported subset of MoXI</li>
+    <li><a href="https://doi.org/10.1007/978-3-031-66149-5_2">MoXI: An Intermediate Language
+        for Symbolic Model Checking</a>, the paper that defines the language</li>
+    <li><a href="https://kind.cs.uiowa.edu/docs/main/user">Kind 2 user documentation</a>,
+        for the engines and the options kMoXI shares with Kind 2</li>
+  </ul>
+
+  <h2 id="people">People</h2>
+  <ul class="bare-links">
+	<li><a href="http://homepage.divms.uiowa.edu/~tinelli">Cesare Tinelli</a></li>
+	<li><a href="https://daniel-larraz.github.io/">Daniel Larraz</a></li>
+	<li><a href="https://lorchrob.github.io/">Robert Lorch</a></li>
+  </ul>
+  <p>kMoXI is developed by the <a href="../">Kind 2</a> team at The University of Iowa.</p>
+
+    </main>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+  </body>
+</html>
